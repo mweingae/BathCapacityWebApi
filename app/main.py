@@ -1,7 +1,15 @@
+import logging
+from .logging_setup import setup_logging
+from .config import *
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-
 from app.routers import data, facilities, settings
+
+setup_logging(
+    log_level=LOG_LEVEL,
+    log_file=LOG_FILE
+)
+logger = logging.getLogger("app.main")
 
 app = FastAPI()
 

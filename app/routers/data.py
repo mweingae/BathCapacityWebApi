@@ -1,4 +1,7 @@
+import logging
 from fastapi import APIRouter, HTTPException
+
+logger = logging.getLogger("app.routers.data")
 
 router = APIRouter(
     prefix="/data",
