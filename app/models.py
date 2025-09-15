@@ -12,7 +12,7 @@ class Data(SQLModel, table=True):
 
 class Facility(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
-    organization_unit : int
+    organization_unit : str
     name: str
     type: str
 

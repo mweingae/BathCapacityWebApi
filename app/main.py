@@ -1,8 +1,12 @@
-import logging
-from .logging_setup import setup_logging
-from .config import *
+import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+import logging
+
+from .logging_setup import setup_logging
+from .config import *
+from app.services.data_collector import DataCollector
 from app.routers import data, facilities, settings
 
 setup_logging(
@@ -11,7 +15,24 @@ setup_logging(
 )
 logger = logging.getLogger("app.main")
 
-app = FastAPI()
+# Background task management
+background_tasks = set()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Start background data collection
+    collector = DataCollector()
+    task = asyncio.create_task(collector.run_continuous_collection())
+    background_tasks.add(task)
+    
+    yield  # App is running
+    
+    # Shutdown: Cancel background tasks
+    for task in background_tasks:
+        task.cancel()
+    await asyncio.gather(*background_tasks, return_exceptions=True)
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(data.router)
 app.include_router(facilities.router)
